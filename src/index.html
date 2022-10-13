@@ -1,0 +1,37 @@
+{# Wrapper template #}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Cookie graphic preview</title>
+    <link rel="stylesheet" href="./css/base.scss" type="text/css" media="all" />
+  </head>
+  <body>
+    <div><strong>Embed Instructions</strong></div>
+    <label for="entrypoint-select">Choose an entrypoint:</label>
+    <select id="entrypoint-select"></select>
+    <ol>
+      <li>
+        Copy the URL of the raw visual:
+        <input type="text" value="" id="url-input" readonly="readonly" />
+        <button id="copy-url-button">Copy</button>
+      </li>
+      <li>Paste the URL into a Pym.js Embed Block on a WordPress post</li>
+    </ol>
+    <a id="view-raw" target="_blank"><button>View Raw</button></a>
+    <span style="margin-left: 10px; margin-right: 10px;">
+      <button id="desktop-preview">Desktop Preview</button>
+      <button id="large-mobile-preview">Large Phone Preview</button>
+      <button id="small-mobile-preview">Small Phone Preview</button>
+    </span>
+    <br/>
+    <span style="margin-top: 10px; margin-bottom: 10px; display: block;">
+      <button id="download-png">Download as PNG</button>
+      <button id="download-svg">Download as SVG</button>
+    </span>
+    <div id="graphic"></div>
+    <script type="module" src="./js/index.js" charset="utf-8"></script>
+  </body>
+</html>

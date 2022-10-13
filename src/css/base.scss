@@ -1,0 +1,13 @@
+@import "./fonts.scss";
+@import "./colors.scss";
+
+body {
+  font-family: $sans-serif;
+}
+
+#graphic {
+  border: 1px solid $gray;
+  width: 780px;
+  resize: horizontal;
+  overflow-x: auto;
+}
