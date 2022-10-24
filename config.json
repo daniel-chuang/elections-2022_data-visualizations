@@ -1,32 +1,19 @@
 {
   "entries": {
     "index.html": {
-      "hed": "Headline",
-      "dek": "This is a short description",
-      "byline": "Firstname Lastname",
-      "source": "This is the source",
+      "hed": "[Insert Race Title Here]",
+      "dek": "Washtenaw County Midterm Results",
+      "byline": "Daniel Chuang",
+      "source": "Washtenaw County",
       "note": "This is a note",
       "illustrator_output_filename": "output.html"
     }
   },
   "fetch": [
     {
-      "type": "doc",
-      "id": "",
-      "output": "",
-      "auth": "~/.daily-google-services.json"
-    },
-    {
-      "type": "sheet",
-      "id": "",
-      "sheetId": "0",
-      "output": "",
-      "auth": "~/.daily-google-services.json"
-    },
-    {
       "type": "json",
-      "id": "",
-      "output": "",
+      "id": "17YYcD0XqraE3sRCp8V4MIedYZwqdwJ0i",
+      "output": "./src/graphic/data/ann_arbor.json",
       "auth": "~/.daily-google-services.json"
     }
   ],

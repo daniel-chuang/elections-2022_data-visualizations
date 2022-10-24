@@ -1,1 +1,23 @@
 // Graphics CSS goes here
+figure {
+  // for anything absolute inside, the top and left is RELATIVE to figure
+  position: relative; 
+}
+
+.tooltip {
+  // top: 10px;
+  // left: 10px;
+  width: 200px;
+  height: 150px;
+  padding: 10px;
+  background-color: white;
+  opacity: 0.85;
+  border: 1px solid black;
+  border-radius: 5px;
+  position: absolute; // position it with top and left
+  display: none; // hide it until revealed
+  
+  // if you put a mouse over a tooltip, ignore... cascade down to whatever is below
+  pointer-events: none; 
+  
+}
