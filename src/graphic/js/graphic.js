@@ -1,13 +1,119 @@
+// https://docs.google.com/spreadsheets/d/1MAHeqkZH3nTEoYnVB9-jrLCningGXr225k8JfrkqemY/edit#gid=0
+
 // JS for your graphic
 import pym from "pym.js";
 import * as d3 from "d3";
 import downloadImage from "./download-image";
 import ann_arbor from "../data/ann_arbor.json"; // importing the json file
+import data from "../data/sample_data.json"; // importing the json file
 
 let width; // Width of the figure, for the svg's reference
 const height = 500;
 
-const draw = () => {
+// Race to test for
+const race = "AAATA Proposal";
+
+// Getting the specific race's data
+function grabRaceData(basejson, race) {
+  for (let i = 0; i < basejson.data.length; i++) {
+    if (basejson.data[i].name === race) {
+      return basejson.data[i];
+    }
+  }
+  return;
+}
+
+// Getting the data for the specific precinct from the report
+function getPrecinctData(report, precinct) {
+  // Getting the specific precinct
+  for (let i = 0; i < report.data.length; i++) {
+    if (precinct === report.data[i].Precinct) {
+      return report.data[i];
+    }
+  }
+  return;
+}
+
+// Getting the plurality winner
+function getPluralityWinner(report, precinct) {
+  const precinctData = getPrecinctData(report, precinct);
+  console.log(precinctData);
+
+  // Getting the max value for the specific precinct
+  const avoidAttributes = [
+    "Precinct",
+    "Rejected write-ins",
+    "Unassigned write-ins",
+    "counted",
+  ];
+  let max = 0;
+  let maxName = "";
+  const reportKeys = Object.keys(precinctData);
+
+  for (let i = 0; i < reportKeys.length; i++) {
+    if (!avoidAttributes.includes(reportKeys[i])) {
+      if (precinctData[reportKeys[i]] > max) {
+        max = precinctData[reportKeys[i]];
+        maxName = reportKeys[i];
+      }
+    }
+  }
+
+  return maxName;
+}
+
+// Gets a list of all the different options
+function getOptions(specificData) {
+  const avoidAttributes = [
+    "Precinct",
+    "Rejected write-ins",
+    "Unassigned write-ins",
+    "counted",
+  ];
+  const returnArray = [];
+  for (let i = 0; i < specificData.options.length; i++) {
+    if (!avoidAttributes.includes(specificData.options[i].label)) {
+      console.log(specificData.options[i].label);
+      returnArray.push(specificData.options[i].label);
+    }
+  }
+  return returnArray;
+}
+
+// Returns a dictionary that assigns a color to each item in an array as keys
+function assignColors(options) {
+  const returnDict = {};
+  for (let i = 0; i < options.length; i++) {
+    // Check if it is dems or reps
+    if (options[i].includes("(DEM)")) {
+      returnDict[options[i]] = "0000FF";
+    } else if (options[i].includes("(REP)")) {
+      returnDict[options[i]] = "FF0000";
+    } else {
+      returnDict[options[i]] = Math.floor(Math.random() * 16777215).toString(
+        16
+      );
+    }
+  }
+  return returnDict;
+}
+
+const draw = async () => {
+  // Gets the live data
+  // const res = await fetch(
+  //   "https://magnify.michigandaily.us/primary-2022-washtenaw-results/results.json",
+  //    {mode: 'no-cors'});
+  // const data = await res.json();
+
+  // Shorthand for fetching data
+  // const data = await d3.json("https://magnify.michigandaily.us/primary-2022-washtenaw-results/results.json");
+
+  console.log(data);
+
+  // Assigning colors
+  const specificData = grabRaceData(data, race);
+  const colors = assignColors(getOptions(specificData));
+
   // SETTING UP DIFFERENT ELEMENTS
   const figure = d3.select("figure");
   width = figure.node().clientWidth; // D3 way of getting the width of the figure
@@ -36,8 +142,17 @@ const draw = () => {
     .attr("stroke-width", 1)
     .attr("position", "relative")
     .attr("fill", (d) => {
-      console.log(d);
-      return "#00274C";
+      const winner = getPluralityWinner(specificData.report, d.properties.NAME);
+      // Check if the winner is in color
+      for (let i = 0; i < Object.keys(colors).length; i++) {
+        console.log(winner);
+        console.log(Object.keys(colors)[i]);
+        console.log(winner.includes(Object.keys(colors)[i]));
+        if (winner.includes(Object.keys(colors)[i])) {
+          return `#${colors[Object.keys(colors)[i]]}`;
+        }
+      }
+      return "#000000";
     })
     .on("mouseover", function (event) {
       const [x, y] = d3.pointer(event); // Returns an array of the x and y coords
