@@ -11,7 +11,8 @@ let width; // Width of the figure, for the svg's reference
 const height = 500;
 
 // Race to test for
-const race = "AAATA Proposal";
+// const race = "AAATA Proposal";
+const race = "Ann Arbor Council W4 DEM";
 
 // Getting the specific race's data
 function grabRaceData(basejson, race) {
@@ -20,6 +21,7 @@ function grabRaceData(basejson, race) {
       return basejson.data[i];
     }
   }
+  console.log("nothing returned for grabRaceData");
   return;
 }
 
@@ -31,13 +33,13 @@ function getPrecinctData(report, precinct) {
       return report.data[i];
     }
   }
-  return;
+  console.log("nothing returned for getPrecinctData");
+  return {};
 }
 
 // Getting the plurality winner
 function getPluralityWinner(report, precinct) {
   const precinctData = getPrecinctData(report, precinct);
-  console.log(precinctData);
 
   // Getting the max value for the specific precinct
   const avoidAttributes = [
@@ -73,7 +75,7 @@ function getOptions(specificData) {
   const returnArray = [];
   for (let i = 0; i < specificData.options.length; i++) {
     if (!avoidAttributes.includes(specificData.options[i].label)) {
-      console.log(specificData.options[i].label);
+      // console.log(specificData.options[i].label);
       returnArray.push(specificData.options[i].label);
     }
   }
@@ -125,6 +127,41 @@ const draw = async () => {
     .attr("height", height)
     .attr("width", width);
 
+  const defs = svg.append("defs");
+  defs
+    .selectAll("pattern")
+    .data(Object.values(colors))
+    .join("pattern")
+    .attr("id", (d) => {
+      return `cross-${d}`;
+    })
+    .attr("width", 6)
+    .attr("height", 4)
+    .attr("patternUnits", "userSpaceOnUse")
+    .attr("patternTransform", "rotate(45)")
+    .each(function (d) {
+      d3.select(this)
+        .append("rect")
+        .attr("width", 4)
+        .attr("height", 6)
+        .attr("fill", d);
+    });
+
+  console.log(colors);
+
+  const legendYLimit = 120;
+  const blockSize = legendYLimit / Object.values(colors).length;
+  const squares = svg.append("g");
+  squares
+    .selectAll("rect")
+    .data(Object.values(colors))
+    .join("rect")
+    .attr("width", blockSize - 10)
+    .attr("height", blockSize - 10)
+    .attr("fill", (d) => `#${d}`)
+    .attr("x", 10)
+    .attr("y", (d, i) => height - legendYLimit + i * blockSize);
+
   // MAKING THE MAP
   const projection = d3.geoMercator().fitSize([width, height], ann_arbor);
 
@@ -145,9 +182,8 @@ const draw = async () => {
       const winner = getPluralityWinner(specificData.report, d.properties.NAME);
       // Check if the winner is in color
       for (let i = 0; i < Object.keys(colors).length; i++) {
-        console.log(winner);
-        console.log(Object.keys(colors)[i]);
-        console.log(winner.includes(Object.keys(colors)[i]));
+        // console.log(Object.keys(colors)[i]);
+        // console.log(winner.includes(Object.keys(colors)[i]));
         if (winner.includes(Object.keys(colors)[i])) {
           return `#${colors[Object.keys(colors)[i]]}`;
         }
