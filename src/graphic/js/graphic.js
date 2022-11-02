@@ -97,7 +97,11 @@ function assignColors(options) {
       );
     }
   }
-  return returnDict;
+  console.log(returnDict);
+  return d3
+    .scaleOrdinal()
+    .domain(Object.keys(returnDict))
+    .range(Object.values(returnDict));
 }
 
 const draw = async () => {
@@ -130,7 +134,7 @@ const draw = async () => {
   const defs = svg.append("defs");
   defs
     .selectAll("pattern")
-    .data(Object.values(colors))
+    .data(colors.range())
     .join("pattern")
     .attr("id", (d) => {
       return `cross-${d}`;
@@ -144,23 +148,74 @@ const draw = async () => {
         .append("rect")
         .attr("width", 4)
         .attr("height", 6)
-        .attr("fill", d);
+        .attr("fill", `#${d}`);
     });
 
   console.log(colors);
 
   const legendYLimit = 120;
-  const blockSize = legendYLimit / Object.values(colors).length;
-  const squares = svg.append("g");
-  squares
-    .selectAll("rect")
-    .data(Object.values(colors))
-    .join("rect")
-    .attr("width", blockSize - 10)
-    .attr("height", blockSize - 10)
-    .attr("fill", (d) => `#${d}`)
-    .attr("x", 10)
-    .attr("y", (d, i) => height - legendYLimit + i * blockSize);
+  const blockSize = legendYLimit / (colors.range().length * 2);
+  svg
+    .append("g")
+    .selectAll("g")
+    .data(colors.range())
+    .join("g")
+    .attr(
+      "transform",
+      (d, i) => `translate(0, ${height - 100 + i * blockSize * 2})`
+    )
+    .each(function (d) {
+      console.log(d);
+      console.log(this);
+
+      // For the blocks
+      d3.select(this)
+        .append("rect")
+        .attr("width", blockSize - 5)
+        .attr("height", blockSize - 5)
+        .attr("fill", (d) => `#${d}`)
+        .attr("y", -blockSize);
+
+      // For the stripes
+      d3.select(this)
+        .append("rect")
+        .attr("width", blockSize - 5)
+        .attr("height", blockSize - 5)
+        .attr("fill", (d) => `url(#cross-${d})`);
+
+      // For the blocks
+      const blockOffset = 14;
+      const fontSize = blockSize * 0.7;
+      d3.select(this)
+        .append("text")
+        .text("ffff")
+        .attr("x", blockSize)
+        .attr("font-family", "Open Sans")
+        .attr("font-size", fontSize)
+        .attr("y", blockOffset);
+
+      // For the stripes
+      d3.select(this)
+        .append("text")
+        .text((d) => colors.invert(d))
+        .attr("x", blockSize)
+        .attr("font-family", "Open Sans")
+        .attr("font-size", fontSize)
+        .attr("y", blockOffset - blockSize);
+    });
+
+  // const legendYLimit = 120;
+  // const blockSize = legendYLimit / Object.values(colors).length;
+  // const squares = svg.append("g");
+  // squares
+  //   .selectAll("rect")
+  //   .data(Object.values(colors))
+  //   .join("rect")
+  //   .attr("width", blockSize - 10)
+  //   .attr("height", blockSize - 10)
+  //   .attr("fill", (d) => `#${d}`)
+  //   .attr("x", 10)
+  //   .attr("y", (d, i) => height - legendYLimit + i * blockSize);
 
   // MAKING THE MAP
   const projection = d3.geoMercator().fitSize([width, height], ann_arbor);
@@ -181,11 +236,11 @@ const draw = async () => {
     .attr("fill", (d) => {
       const winner = getPluralityWinner(specificData.report, d.properties.NAME);
       // Check if the winner is in color
-      for (let i = 0; i < Object.keys(colors).length; i++) {
+      for (let i = 0; i < colors.domain().length; i++) {
         // console.log(Object.keys(colors)[i]);
         // console.log(winner.includes(Object.keys(colors)[i]));
-        if (winner.includes(Object.keys(colors)[i])) {
-          return `#${colors[Object.keys(colors)[i]]}`;
+        if (winner.includes(colors.domain()[i])) {
+          return `#${colors(colors.domain()[i])}`;
         }
       }
       return "#000000";
