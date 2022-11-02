@@ -119,6 +119,9 @@ const draw = async () => {
   // Assigning colors
   const specificData = grabRaceData(data, race);
   const colors = assignColors(getOptions(specificData));
+  const invertColors = d3.scaleOrdinal()
+    .domain(colors.range())
+    .range(colors.domain());
 
   // SETTING UP DIFFERENT ELEMENTS
   const figure = d3.select("figure");
@@ -188,7 +191,7 @@ const draw = async () => {
       const fontSize = blockSize * 0.7;
       d3.select(this)
         .append("text")
-        .text("ffff")
+        .text((d) => invertColors(d) + " (Leading)")
         .attr("x", blockSize)
         .attr("font-family", "Open Sans")
         .attr("font-size", fontSize)
@@ -197,7 +200,7 @@ const draw = async () => {
       // For the stripes
       d3.select(this)
         .append("text")
-        .text((d) => colors.invert(d))
+        .text((d) => invertColors(d))
         .attr("x", blockSize)
         .attr("font-family", "Open Sans")
         .attr("font-size", fontSize)
