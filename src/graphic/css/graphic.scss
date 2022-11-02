@@ -7,8 +7,7 @@ figure {
 .tooltip {
   // top: 10px;
   // left: 10px;
-  width: 200px;
-  height: 150px;
+  width: 250px;
   padding: 10px;
   background-color: white;
   opacity: 0.85;
@@ -20,4 +19,9 @@ figure {
   // if you put a mouse over a tooltip, ignore... cascade down to whatever is below
   pointer-events: none; 
   
+}
+
+th {
+  font-weight: normal;
+  padding: 0 10px;
 }

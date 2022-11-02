@@ -1,5 +1,7 @@
 // https://docs.google.com/spreadsheets/d/1MAHeqkZH3nTEoYnVB9-jrLCningGXr225k8JfrkqemY/edit#gid=0
 
+// TODO: Striped Fills, Bar at Bottom, Live Data, Titles? idk, Actual Website, Stylize better
+
 // JS for your graphic
 import pym from "pym.js";
 import * as d3 from "d3";
@@ -11,8 +13,8 @@ let width; // Width of the figure, for the svg's reference
 const height = 500;
 
 // Race to test for
-// const race = "AAATA Proposal";
-const race = "Ann Arbor Council W4 DEM";
+const race = "AAATA Proposal";
+//const race = "Ann Arbor Council W5 DEM";
 
 // Getting the specific race's data
 function grabRaceData(basejson, race) {
@@ -104,6 +106,26 @@ function assignColors(options) {
     .range(Object.values(returnDict));
 }
 
+// Counts the total amount of votes for a precint object thing
+function totalVotes(precinctData) {
+  const avoidAttributes = [
+    "Precinct",
+    "Rejected write-ins",
+    "Unassigned write-ins",
+    "counted",
+  ];
+  let total = 0;
+  const precinctDataKeys = Object.keys(precinctData);
+  for (let i = 0; i < precinctDataKeys.length; i++) {
+    if (!avoidAttributes.includes(precinctDataKeys[i])) {
+      // console.log(specificData.options[i].label);
+      console.log(precinctData[precinctDataKeys[i]]);
+      total += precinctData[precinctDataKeys[i]];
+    }
+  }
+  return total;
+}
+
 const draw = async () => {
   // Gets the live data
   // const res = await fetch(
@@ -119,7 +141,8 @@ const draw = async () => {
   // Assigning colors
   const specificData = grabRaceData(data, race);
   const colors = assignColors(getOptions(specificData));
-  const invertColors = d3.scaleOrdinal()
+  const invertColors = d3
+    .scaleOrdinal()
     .domain(colors.range())
     .range(colors.domain());
 
@@ -191,7 +214,7 @@ const draw = async () => {
       const fontSize = blockSize * 0.7;
       d3.select(this)
         .append("text")
-        .text((d) => invertColors(d) + " (Leading)")
+        .text((d) => `${invertColors(d)} (Leading)`)
         .attr("x", blockSize)
         .attr("font-family", "Open Sans")
         .attr("font-size", fontSize)
@@ -252,12 +275,49 @@ const draw = async () => {
       const [x, y] = d3.pointer(event); // Returns an array of the x and y coords
       this.parentNode.appendChild(this); // redraws that specific component
       d3.select(this).attr("stroke", "#FFCB05");
+
+      // Defining the dynamic data for the tooltip hover
+      let dynamicTable = "<table>";
+      dynamicTable +=
+        "<tr><th><b>Option</b></th><th><b>Votes</b></th><th><b>Percent</b></th></tr>";
+      // Looping through all the options
+      // Calculating the total amount of voters
+      const precinctData = getPrecinctData(
+        specificData.report,
+        d3.select(this).datum().properties.NAME
+      );
+      const totalVoteCount = totalVotes(precinctData);
+      console.log(totalVoteCount);
+      for (let i = 0; i < colors.domain().length; i++) {
+        dynamicTable += "<tr>";
+
+        // Options
+        dynamicTable += `<th>${colors.domain()[i]}</th>`;
+
+        // Votes
+        if (precinctData[colors.domain()[i]] === undefined) {
+          dynamicTable += "<th>" + "N/A" + "</th>";
+        } else {
+          dynamicTable += `<th>${precinctData[colors.domain()[i]]}</th>`;
+        }
+
+        // Vote percent
+        dynamicTable += `<th>${(
+          (100 * precinctData[colors.domain()[i]]) /
+          totalVoteCount
+        ).toFixed(2)}%</th>`;
+
+        dynamicTable += "</tr>";
+      }
+      dynamicTable += "</table>";
+
       tooltip
         .style("display", "unset")
         .style("top", `${y}px`)
         .html(
-          `<h5>Ward ${d3.select(this).datum().properties.WARD_NUM}, ` +
-            `Precinct ${d3.select(this).datum().properties.PRCNCT_NUM}</h5>`
+          `<b>Ward ${d3.select(this).datum().properties.WARD_NUM}, ` +
+            `Precinct ${d3.select(this).datum().properties.PRCNCT_NUM}</b>
+            ${dynamicTable}`
         );
       if (x < width / 2) {
         tooltip.style("left", `${x}px`);
