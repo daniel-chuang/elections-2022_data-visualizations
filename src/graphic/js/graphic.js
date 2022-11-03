@@ -1,6 +1,6 @@
 // https://docs.google.com/spreadsheets/d/1MAHeqkZH3nTEoYnVB9-jrLCningGXr225k8JfrkqemY/edit#gid=0
 
-// TODO: Striped Fills, Bar at Bottom, Live Data, Titles? idk, Actual Website, Stylize better
+// TODO: Fix Legend, Bar at Bottom, Titles? idk, Actual Website, Stylize better
 
 // JS for your graphic
 import pym from "pym.js";
@@ -13,8 +13,9 @@ let width; // Width of the figure, for the svg's reference
 const height = 500;
 
 // Race to test for
-const race = "AAATA Proposal";
-//const race = "Ann Arbor Council W5 DEM";
+// const race = "AAATA Proposal";
+const race = "Ann Arbor Mayor DEM";
+// const race = "Ann Arbor Council W4 DEM";
 
 // Getting the specific race's data
 function grabRaceData(basejson, race) {
@@ -23,7 +24,7 @@ function grabRaceData(basejson, race) {
       return basejson.data[i];
     }
   }
-  console.log("nothing returned for grabRaceData");
+  // console.log("nothing returned for grabRaceData");
   return;
 }
 
@@ -35,7 +36,7 @@ function getPrecinctData(report, precinct) {
       return report.data[i];
     }
   }
-  console.log("nothing returned for getPrecinctData");
+  // console.log("nothing returned for getPrecinctData");
   return {};
 }
 
@@ -77,7 +78,6 @@ function getOptions(specificData) {
   const returnArray = [];
   for (let i = 0; i < specificData.options.length; i++) {
     if (!avoidAttributes.includes(specificData.options[i].label)) {
-      // console.log(specificData.options[i].label);
       returnArray.push(specificData.options[i].label);
     }
   }
@@ -99,7 +99,6 @@ function assignColors(options) {
       );
     }
   }
-  console.log(returnDict);
   return d3
     .scaleOrdinal()
     .domain(Object.keys(returnDict))
@@ -118,7 +117,6 @@ function totalVotes(precinctData) {
   const precinctDataKeys = Object.keys(precinctData);
   for (let i = 0; i < precinctDataKeys.length; i++) {
     if (!avoidAttributes.includes(precinctDataKeys[i])) {
-      // console.log(specificData.options[i].label);
       console.log(precinctData[precinctDataKeys[i]]);
       total += precinctData[precinctDataKeys[i]];
     }
@@ -157,6 +155,7 @@ const draw = async () => {
     .attr("height", height)
     .attr("width", width);
 
+  // setup for striped boxes in legends
   const defs = svg.append("defs");
   defs
     .selectAll("pattern")
@@ -179,8 +178,8 @@ const draw = async () => {
 
   console.log(colors);
 
-  const legendYLimit = 120;
-  const blockSize = legendYLimit / (colors.range().length * 2);
+  const blockSize = 20;
+  const legendYLimit = blockSize * 2 * colors.range().length;
   svg
     .append("g")
     .selectAll("g")
@@ -188,7 +187,7 @@ const draw = async () => {
     .join("g")
     .attr(
       "transform",
-      (d, i) => `translate(0, ${height - 100 + i * blockSize * 2})`
+      (d, i) => `translate(0, ${height - legendYLimit + i * blockSize * 2})`
     )
     .each(function (d) {
       console.log(d);
@@ -210,7 +209,7 @@ const draw = async () => {
         .attr("fill", (d) => `url(#cross-${d})`);
 
       // For the blocks
-      const blockOffset = 14;
+      const blockOffset = 15;
       const fontSize = blockSize * 0.7;
       d3.select(this)
         .append("text")
@@ -260,16 +259,28 @@ const draw = async () => {
     .attr("stroke-width", 1)
     .attr("position", "relative")
     .attr("fill", (d) => {
+      const precinctData = getPrecinctData(
+        specificData.report,
+        d.properties.NAME
+      );
       const winner = getPluralityWinner(specificData.report, d.properties.NAME);
+      let returnColor = "#000000";
       // Check if the winner is in color
       for (let i = 0; i < colors.domain().length; i++) {
         // console.log(Object.keys(colors)[i]);
         // console.log(winner.includes(Object.keys(colors)[i]));
         if (winner.includes(colors.domain()[i])) {
-          return `#${colors(colors.domain()[i])}`;
+          // Make stripes if not fully counted
+          if (precinctData.counted !== "fully-counted") {
+            returnColor = `url(#cross-${colors(colors.domain()[i])})`;
+          } else {
+            returnColor = `#${colors(colors.domain()[i])}`;
+          }
+          break;
         }
       }
-      return "#000000";
+
+      return returnColor;
     })
     .on("mouseover", function (event) {
       const [x, y] = d3.pointer(event); // Returns an array of the x and y coords
