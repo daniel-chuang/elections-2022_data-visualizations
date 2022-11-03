@@ -1,6 +1,5 @@
 # Cookie specific
 build/
-dist/
 auth.json
 .daily-google-services.json
 *.ai
