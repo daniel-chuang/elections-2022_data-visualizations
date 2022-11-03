@@ -20,7 +20,7 @@
   },
   "targets": {
     "default": {
-      "publicUrl": "/"
+      "publicUrl": "/2022-midterm-results"
     }
   },
   "dependencies": {

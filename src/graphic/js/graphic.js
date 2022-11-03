@@ -1,22 +1,28 @@
-// https://docs.google.com/spreadsheets/d/1MAHeqkZH3nTEoYnVB9-jrLCningGXr225k8JfrkqemY/edit#gid=0
-
 // TODO: Fix Legend, Bar at Bottom, Titles? idk, Actual Website, Stylize better
 
-// JS for your graphic
+//////////////// SPECIFICATIONS ///////////////
+// All of the election races that we are covering
+// https://docs.google.com/spreadsheets/d/1MAHeqkZH3nTEoYnVB9-jrLCningGXr225k8JfrkqemY/edit#gid=0
+
+//////////////// IMPORTS //////////////////////
+// Imports
 import pym from "pym.js";
 import * as d3 from "d3";
 import downloadImage from "./download-image";
 import ann_arbor from "../data/ann_arbor.json"; // importing the json file
 import data from "../data/sample_data.json"; // importing the json file
+import { sum } from "d3";
 
+// Initialization
 let width; // Width of the figure, for the svg's reference
 const height = 500;
 
-// Race to test for
+// Race to Cover
 // const race = "AAATA Proposal";
 const race = "Ann Arbor Mayor DEM";
 // const race = "Ann Arbor Council W4 DEM";
 
+////////////////// FUNCTIONS //////////////////
 // Getting the specific race's data
 function grabRaceData(basejson, race) {
   for (let i = 0; i < basejson.data.length; i++) {
@@ -124,19 +130,37 @@ function totalVotes(precinctData) {
   return total;
 }
 
+// Count the total amount of votes for everything
+function totalVotesEverywhere(specificData, colors) {
+  const returnObject = {};
+  const report = specificData.report.data;
+  for (let i = 0; i < colors.domain().length; i++) {
+    // Loops through the options
+    returnObject[colors.domain()[i]] = 0;
+    for (let j = 0; j < report.length; j++) {
+      // Loops through the precincts
+      returnObject[colors.domain()[i]] += report[j][colors.domain()[i]];
+    }
+  }
+  console.log(returnObject);
+  return returnObject;
+}
+
+////////////////// RENDERING //////////////////
 const draw = async () => {
-  // Gets the live data
+  //// FETCHING DATA ////
+  // Traditional way of getting the live data
   // const res = await fetch(
   //   "https://magnify.michigandaily.us/primary-2022-washtenaw-results/results.json",
   //    {mode: 'no-cors'});
   // const data = await res.json();
 
-  // Shorthand for fetching data
+  // Shorthand for fetching data with d3
   // const data = await d3.json("https://magnify.michigandaily.us/primary-2022-washtenaw-results/results.json");
 
   console.log(data);
 
-  // Assigning colors
+  //// ASSIGNING COLORS TO EACH OPTION ////
   const specificData = grabRaceData(data, race);
   const colors = assignColors(getOptions(specificData));
   const invertColors = d3
@@ -144,18 +168,16 @@ const draw = async () => {
     .domain(colors.range())
     .range(colors.domain());
 
-  // SETTING UP DIFFERENT ELEMENTS
+  //// SETTING UP DIFFERENT ELEMENTS OF THE GRAPH ////
   const figure = d3.select("figure");
   width = figure.node().clientWidth; // D3 way of getting the width of the figure
-
   const tooltip = figure.append("div").attr("class", "tooltip");
-
   const svg = figure
     .append("svg") // Changing the size of our new svg visual
     .attr("height", height)
     .attr("width", width);
 
-  // setup for striped boxes in legends
+  //// SETTING UP STRIPED FILLING ////
   const defs = svg.append("defs");
   defs
     .selectAll("pattern")
@@ -176,10 +198,11 @@ const draw = async () => {
         .attr("fill", `#${d}`);
     });
 
-  console.log(colors);
-
+  //// SETTING UP VARIABLES FOR THE LEGEND ////
   const blockSize = 20;
   const legendYLimit = blockSize * 2 * colors.range().length;
+
+  //// CREATING THE LEGEND ////
   svg
     .append("g")
     .selectAll("g")
@@ -229,27 +252,11 @@ const draw = async () => {
         .attr("y", blockOffset - blockSize);
     });
 
-  // const legendYLimit = 120;
-  // const blockSize = legendYLimit / Object.values(colors).length;
-  // const squares = svg.append("g");
-  // squares
-  //   .selectAll("rect")
-  //   .data(Object.values(colors))
-  //   .join("rect")
-  //   .attr("width", blockSize - 10)
-  //   .attr("height", blockSize - 10)
-  //   .attr("fill", (d) => `#${d}`)
-  //   .attr("x", 10)
-  //   .attr("y", (d, i) => height - legendYLimit + i * blockSize);
-
-  // MAKING THE MAP
+  //// MAKING THE MAP ////
   const projection = d3.geoMercator().fitSize([width, height], ann_arbor);
-
   const path = d3.geoPath().projection(projection);
 
-  // Making the thang
-  // const paths = svg
-  svg
+  const paths = svg
     .selectAll("path")
     .data(ann_arbor.features)
     .enter()
@@ -267,8 +274,6 @@ const draw = async () => {
       let returnColor = "#000000";
       // Check if the winner is in color
       for (let i = 0; i < colors.domain().length; i++) {
-        // console.log(Object.keys(colors)[i]);
-        // console.log(winner.includes(Object.keys(colors)[i]));
         if (winner.includes(colors.domain()[i])) {
           // Make stripes if not fully counted
           if (precinctData.counted !== "fully-counted") {
@@ -281,7 +286,37 @@ const draw = async () => {
       }
 
       return returnColor;
-    })
+    });
+
+  //// MAKING THE BAR ////
+  const barContainer = figure.append("div").attr("class", "barContainer");
+
+  const totalVoteCountArray = totalVotesEverywhere(specificData, colors);
+  let linearGradient = "linear-gradient( to right,";
+  let currentPercent = 0;
+  for (let i = 0; i < colors.domain().length; i++) {
+    const percent =
+      (100 * totalVoteCountArray[colors.domain()[i]]) /
+      sum(Object.values(totalVoteCountArray));
+    linearGradient += `#${colors(
+      colors.domain()[i]
+    )} ${currentPercent}% ${percent}%`;
+    if (i !== colors.domain().length - 1) {
+      linearGradient += ",";
+    }
+    currentPercent += percent;
+  }
+  linearGradient += ")";
+  console.log(linearGradient);
+  // const barBlocks = barContainer
+  barContainer
+    .append("div")
+    .style("width", `${width}px`)
+    .style("height", `${20}px`)
+    .style("background", linearGradient);
+
+  //// MOUSE EVENTS FOR THE MAP ////
+  paths
     .on("mouseover", function (event) {
       const [x, y] = d3.pointer(event); // Returns an array of the x and y coords
       this.parentNode.appendChild(this); // redraws that specific component
@@ -293,8 +328,9 @@ const draw = async () => {
         "<tr><th><b>Option</b></th><th><b>Votes</b></th><th><b>Percent</b></th></tr>";
       // Looping through all the options
       // Calculating the total amount of voters
+      const report = specificData.report;
       const precinctData = getPrecinctData(
-        specificData.report,
+        report,
         d3.select(this).datum().properties.NAME
       );
       const totalVoteCount = totalVotes(precinctData);
@@ -322,6 +358,7 @@ const draw = async () => {
       }
       dynamicTable += "</table>";
 
+      //// RENDER THE TOOLTIP ////
       tooltip
         .style("display", "unset")
         .style("top", `${y}px`)
@@ -338,6 +375,7 @@ const draw = async () => {
     })
     .on("mousemove", (event) => {
       const [x, y] = d3.pointer(event); // Returns an array of the x and y coords
+      // Move the tooltip when the mouse moves
       tooltip.style("top", `${y}px`);
       if (x < width / 2) {
         tooltip.style("left", `${x}px`);
@@ -349,14 +387,6 @@ const draw = async () => {
       d3.select(this).attr("stroke", "#FFFFFF");
       tooltip.style("display", "none");
     });
-
-  // step 1: access data
-  // step 2: create chart dimensions
-  // step 3: draw canvas
-  // step 4: create scales
-  // step 5: draw data
-  // step 6: draw peripherals
-  // step 7: set up interactions
 };
 
 window.onresize = () => {};

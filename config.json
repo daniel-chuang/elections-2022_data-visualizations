@@ -17,11 +17,11 @@
     }
   ],
   "deployment": {
-    "url": "https://michigandaily.github.io/",
+    "url": "https://test.michigandaily.com/2022-midterm-results/",
     "region": "us-east-2",
-    "distribution": "",
-    "bucket": "",
-    "key": "",
+    "distribution": "E3DZSV694XOOMU",
+    "bucket": "test.michigandaily.com",
+    "key": "2022-midterm-results",
     "build": "./dist",
     "profile": "sink"
   }
