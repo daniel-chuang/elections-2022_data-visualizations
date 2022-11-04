@@ -66,6 +66,10 @@ function getPluralityWinner(report, precinct) {
       if (precinctData[reportKeys[i]] > max) {
         max = precinctData[reportKeys[i]];
         maxName = reportKeys[i];
+      } else if (precinctData[reportKeys[i]] === max) {
+        maxName = "Tie";
+      } else {
+        continue;
       }
     }
   }
@@ -179,6 +183,7 @@ const draw = async () => {
 
   //// SETTING UP STRIPED FILLING ////
   const defs = svg.append("defs");
+
   defs
     .selectAll("pattern")
     .data(colors.range())
@@ -197,6 +202,18 @@ const draw = async () => {
         .attr("height", 6)
         .attr("fill", `#${d}`);
     });
+
+  defs
+    .append("pattern")
+    .attr("id", "cross-979797")
+    .attr("width", 6)
+    .attr("height", 4)
+    .attr("patternUnits", "userSpaceOnUse")
+    .attr("patternTransform", "rotate(45)")
+    .append("rect")
+    .attr("width", 4)
+    .attr("height", 6)
+    .attr("fill", `#979797`);
 
   //// SETTING UP VARIABLES FOR THE LEGEND ////
   const blockSize = 20;
@@ -280,6 +297,13 @@ const draw = async () => {
             returnColor = `url(#cross-${colors(colors.domain()[i])})`;
           } else {
             returnColor = `#${colors(colors.domain()[i])}`;
+          }
+          break;
+        } else if (winner === "Tie") {
+          if (precinctData.counted !== "fully-counted") {
+            returnColor = `url(#cross-979797)`;
+          } else {
+            returnColor = `#979797`;
           }
           break;
         }
