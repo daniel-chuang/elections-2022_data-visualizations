@@ -586,13 +586,12 @@ function getPluralityWinner(report, precinct) {
     let max = 0;
     let maxName = "";
     const reportKeys = Object.keys(precinctData);
-    for(let i = 0; i < reportKeys.length; i++){
-        if (!avoidAttributes.includes(reportKeys[i])) {
-            if (precinctData[reportKeys[i]] > max) {
-                max = precinctData[reportKeys[i]];
-                maxName = reportKeys[i];
-            }
-        }
+    for(let i = 0; i < reportKeys.length; i++)if (!avoidAttributes.includes(reportKeys[i])) {
+        if (precinctData[reportKeys[i]] > max) {
+            max = precinctData[reportKeys[i]];
+            maxName = reportKeys[i];
+        } else if (precinctData[reportKeys[i]] === max) maxName = "Tie";
+        else continue;
     }
     return maxName;
 }
@@ -676,6 +675,7 @@ const draw = async ()=>{
     }).attr("width", 6).attr("height", 4).attr("patternUnits", "userSpaceOnUse").attr("patternTransform", "rotate(45)").each(function(d) {
         _d3.select(this).append("rect").attr("width", 4).attr("height", 6).attr("fill", `#${d}`);
     });
+    defs.append("pattern").attr("id", "cross-979797").attr("width", 6).attr("height", 4).attr("patternUnits", "userSpaceOnUse").attr("patternTransform", "rotate(45)").append("rect").attr("width", 4).attr("height", 6).attr("fill", `#979797`);
     //// SETTING UP VARIABLES FOR THE LEGEND ////
     const blockSize = 20;
     const legendYLimit = blockSize * 2 * colors.range().length;
@@ -706,11 +706,17 @@ const draw = async ()=>{
         const winner = getPluralityWinner(specificData.report, d.properties.NAME);
         let returnColor = "#000000";
         // Check if the winner is in color
-        for(let i = 0; i < colors.domain().length; i++)if (winner.includes(colors.domain()[i])) {
-            // Make stripes if not fully counted
-            if (precinctData.counted !== "fully-counted") returnColor = `url(#cross-${colors(colors.domain()[i])})`;
-            else returnColor = `#${colors(colors.domain()[i])}`;
-            break;
+        for(let i = 0; i < colors.domain().length; i++){
+            if (winner.includes(colors.domain()[i])) {
+                // Make stripes if not fully counted
+                if (precinctData.counted !== "fully-counted") returnColor = `url(#cross-${colors(colors.domain()[i])})`;
+                else returnColor = `#${colors(colors.domain()[i])}`;
+                break;
+            } else if (winner === "Tie") {
+                if (precinctData.counted !== "fully-counted") returnColor = `url(#cross-979797)`;
+                else returnColor = `#979797`;
+                break;
+            }
         }
         return returnColor;
     });
@@ -781,7 +787,7 @@ window.onload = ()=>{
     draw();
 };
 
-},{"pym.js":"21u1Q","d3":"17XFv","./download-image":"jTqFR","../data/ann_arbor.json":"2oxc2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../data/sample_data.json":"h72oc"}],"21u1Q":[function(require,module,exports) {
+},{"pym.js":"21u1Q","d3":"17XFv","./download-image":"jTqFR","../data/ann_arbor.json":"2oxc2","../data/sample_data.json":"h72oc","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"21u1Q":[function(require,module,exports) {
 /*! pym.js - v1.3.2 - 2018-02-13 */ /*
 * Pym.js is library that resizes an iframe based on the width of the parent and the resulting height of the child.
 * Check out the docs at http://blog.apps.npr.org/pym.js/ or the readme at README.md for usage.
