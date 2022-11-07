@@ -1,17 +1,24 @@
 figure {
+  flex-direction: column;
+  align-items: center;
+  display: flex;
   position: relative;
 }
 
 .tooltip {
-  width: 250px;
   opacity: .85;
   pointer-events: none;
   background-color: #fff;
   border: 1px solid #000;
   border-radius: 5px;
   padding: 10px;
+  font-size: 12px;
   display: none;
   position: absolute;
+}
+
+.tooltip .text {
+  font-size: 15px;
 }
 
 th {

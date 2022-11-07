@@ -14,8 +14,10 @@ import data from "../data/sample_data.json"; // importing the json file
 import { sum } from "d3";
 
 // Initialization
-let width; // Width of the figure, for the svg's reference
-const height = 500;
+let width = 500; // Width of the figure, for the svg's reference
+let height = 500;
+let tie_exists = false;
+let is_mobile = false;
 
 // Race to Cover
 // const race = "AAATA Proposal";
@@ -99,6 +101,7 @@ function assignColors(options) {
   const returnDict = {};
   for (let i = 0; i < options.length; i++) {
     // Check if it is dems or reps
+    console.log(options[i]);
     if (options[i].includes("(DEM)")) {
       returnDict[options[i]] = "0000FF";
     } else if (options[i].includes("(REP)")) {
@@ -160,26 +163,38 @@ const draw = async () => {
   // const data = await res.json();
 
   // Shorthand for fetching data with d3
-  // const data = await d3.json("https://magnify.michigandaily.us/primary-2022-washtenaw-results/results.json");
+  // const data = await d3.json(
+  //   "https://magnify.michigandaily.us/primary-2022-washtenaw-results/results.json"
+  // );
 
   console.log(data);
 
   //// ASSIGNING COLORS TO EACH OPTION ////
   const specificData = grabRaceData(data, race);
   const colors = assignColors(getOptions(specificData));
-  const invertColors = d3
-    .scaleOrdinal()
-    .domain(colors.range())
-    .range(colors.domain());
 
   //// SETTING UP DIFFERENT ELEMENTS OF THE GRAPH ////
   const figure = d3.select("figure");
   width = figure.node().clientWidth; // D3 way of getting the width of the figure
+
+  // Setting up the figure
   const tooltip = figure.append("div").attr("class", "tooltip");
+
+  // Change positioning based on if mobile or not
+  if (is_mobile) {
+    tooltip.attr("position", "relative");
+    height += 75;
+  }
+
   const svg = figure
     .append("svg") // Changing the size of our new svg visual
     .attr("height", height)
     .attr("width", width);
+
+  // Check for mobile
+  if (width < 500) {
+    is_mobile = true;
+  }
 
   //// SETTING UP STRIPED FILLING ////
   const defs = svg.append("defs");
@@ -215,60 +230,6 @@ const draw = async () => {
     .attr("height", 6)
     .attr("fill", `#979797`);
 
-  //// SETTING UP VARIABLES FOR THE LEGEND ////
-  const blockSize = 20;
-  const legendYLimit = blockSize * 2 * colors.range().length;
-
-  //// CREATING THE LEGEND ////
-  svg
-    .append("g")
-    .selectAll("g")
-    .data(colors.range())
-    .join("g")
-    .attr(
-      "transform",
-      (d, i) => `translate(0, ${height - legendYLimit + i * blockSize * 2})`
-    )
-    .each(function (d) {
-      console.log(d);
-      console.log(this);
-
-      // For the blocks
-      d3.select(this)
-        .append("rect")
-        .attr("width", blockSize - 5)
-        .attr("height", blockSize - 5)
-        .attr("fill", (d) => `#${d}`)
-        .attr("y", -blockSize);
-
-      // For the stripes
-      d3.select(this)
-        .append("rect")
-        .attr("width", blockSize - 5)
-        .attr("height", blockSize - 5)
-        .attr("fill", (d) => `url(#cross-${d})`);
-
-      // For the blocks
-      const blockOffset = 15;
-      const fontSize = blockSize * 0.7;
-      d3.select(this)
-        .append("text")
-        .text((d) => `${invertColors(d)} (Leading)`)
-        .attr("x", blockSize)
-        .attr("font-family", "Open Sans")
-        .attr("font-size", fontSize)
-        .attr("y", blockOffset);
-
-      // For the stripes
-      d3.select(this)
-        .append("text")
-        .text((d) => invertColors(d))
-        .attr("x", blockSize)
-        .attr("font-family", "Open Sans")
-        .attr("font-size", fontSize)
-        .attr("y", blockOffset - blockSize);
-    });
-
   //// MAKING THE MAP ////
   const projection = d3.geoMercator().fitSize([width, height], ann_arbor);
   const path = d3.geoPath().projection(projection);
@@ -300,6 +261,7 @@ const draw = async () => {
           }
           break;
         } else if (winner === "Tie") {
+          tie_exists = true;
           if (precinctData.counted !== "fully-counted") {
             returnColor = `url(#cross-979797)`;
           } else {
@@ -312,8 +274,88 @@ const draw = async () => {
       return returnColor;
     });
 
+  // Moving the figure up if mobile
+  if (is_mobile) {
+    console.log("IS MOBILE");
+    paths.attr("transform", `translate(0, ${-50})`);
+  }
+
+  //// CHECKING TO ADD TIE TO THE LEGEND ////
+  if (tie_exists) {
+    colors.domain([...colors.domain(), "Tie"]);
+    colors.range([...colors.range(), "979797"]);
+  }
+  const invertColors = d3
+    .scaleOrdinal()
+    .domain(colors.range())
+    .range(colors.domain());
+
+  //// SETTING UP VARIABLES FOR THE LEGEND ////
+  const blockSize = 20;
+  const legendYLimit = blockSize * 2 * colors.range().length;
+  const blockOffset = 13;
+  const fontSize = blockSize * 0.7;
+
+  svg
+    .append("g")
+    .selectAll("g")
+    .data(colors.range())
+    .join("g")
+    .attr(
+      "transform",
+      (d, i) => `translate(0, ${height - legendYLimit + i * blockSize * 2})`
+    )
+
+    .each(function (d) {
+      console.log(d);
+      console.log(this);
+
+      // For the blocks
+      d3.select(this)
+        .append("rect")
+        .attr("width", blockSize - 5)
+        .attr("height", blockSize - 5)
+        .attr("fill", (d) => `#${d}`)
+        .attr("y", blockSize);
+
+      // For the stripes
+      d3.select(this)
+        .append("rect")
+        .attr("width", blockSize - 5)
+        .attr("height", blockSize - 5)
+        .attr("fill", (d) => `url(#cross-${d})`);
+
+      // For the stripes, text
+      d3.select(this)
+        .append("text")
+        .text((d) => `${invertColors(d)} (Partially Counted)`)
+        .attr("x", blockSize)
+        .attr("font-family", "Open Sans")
+        .attr("font-size", fontSize)
+        .attr("y", blockOffset);
+
+      // For the blocks, text
+      d3.select(this)
+        .append("text")
+        .text((d) => invertColors(d))
+        .attr("x", blockSize)
+        .attr("font-family", "Open Sans")
+        .attr("font-size", fontSize)
+        .attr("y", blockOffset + blockSize);
+    });
+
   //// MAKING THE BAR ////
   const barContainer = figure.append("div").attr("class", "barContainer");
+
+  // Remove the tie option from colors
+  colors.domain().splice(-1);
+  colors.range().splice(-1);
+  colors
+    .domain(colors.domain().slice(0, colors.domain().length - 1))
+    .range(colors.range().slice(0, colors.range().length - 1));
+  console.log(colors);
+  console.log(colors.range());
+  console.log(colors.domain());
 
   const totalVoteCountArray = totalVotesEverywhere(specificData, colors);
   let linearGradient = "linear-gradient( to right,";
@@ -322,9 +364,9 @@ const draw = async () => {
     const percent =
       (100 * totalVoteCountArray[colors.domain()[i]]) /
       sum(Object.values(totalVoteCountArray));
-    linearGradient += `#${colors(
-      colors.domain()[i]
-    )} ${currentPercent}% ${percent}%`;
+    linearGradient += `#${colors(colors.domain()[i])} ${currentPercent}% ${
+      currentPercent + percent
+    }%`;
     if (i !== colors.domain().length - 1) {
       linearGradient += ",";
     }
@@ -349,7 +391,7 @@ const draw = async () => {
       // Defining the dynamic data for the tooltip hover
       let dynamicTable = "<table>";
       dynamicTable +=
-        "<tr><th><b>Option</b></th><th><b>Votes</b></th><th><b>Percent</b></th></tr>";
+        "<tr><th><b>Choices</b></th><th><b>Votes</b></th><th><b>Percent</b></th></tr>";
       // Looping through all the options
       // Calculating the total amount of voters
       const report = specificData.report;
@@ -383,28 +425,32 @@ const draw = async () => {
       dynamicTable += "</table>";
 
       //// RENDER THE TOOLTIP ////
-      tooltip
-        .style("display", "unset")
-        .style("top", `${y}px`)
-        .html(
-          `<b>Ward ${d3.select(this).datum().properties.WARD_NUM}, ` +
-            `Precinct ${d3.select(this).datum().properties.PRCNCT_NUM}</b>
+      tooltip.style("display", "unset").html(
+        `<b>Ward ${d3.select(this).datum().properties.WARD_NUM}, ` +
+          `Precinct ${d3.select(this).datum().properties.PRCNCT_NUM}</b>
             ${dynamicTable}`
-        );
-      if (x < width / 2) {
-        tooltip.style("left", `${x}px`);
-      } else {
-        tooltip.style("right", `${x - 220}px`);
+      );
+
+      if (!is_mobile) {
+        tooltip.style("top", `${y}px`);
+
+        if (x < width / 2) {
+          tooltip.style("left", `${x}px`);
+        } else {
+          tooltip.style("left", `${x - 220}px`);
+        }
       }
     })
     .on("mousemove", (event) => {
       const [x, y] = d3.pointer(event); // Returns an array of the x and y coords
       // Move the tooltip when the mouse moves
-      tooltip.style("top", `${y}px`);
-      if (x < width / 2) {
-        tooltip.style("left", `${x}px`);
-      } else {
-        tooltip.style("left", `${x - 220}px`);
+      if (!is_mobile) {
+        tooltip.style("top", `${y}px`);
+        if (x < width / 2) {
+          tooltip.style("left", `${x}px`);
+        } else {
+          tooltip.style("left", `${x - 270}px`);
+        }
       }
     })
     .on("mouseout", function () {

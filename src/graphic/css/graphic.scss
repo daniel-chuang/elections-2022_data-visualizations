@@ -1,13 +1,16 @@
 // Graphics CSS goes here
 figure {
   // for anything absolute inside, the top and left is RELATIVE to figure
-  position: relative; 
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .tooltip {
   // top: 10px;
   // left: 10px;
-  width: 250px;
+  // width: 250px;
   padding: 10px;
   background-color: white;
   opacity: 0.85;
@@ -19,6 +22,11 @@ figure {
   // if you put a mouse over a tooltip, ignore... cascade down to whatever is below
   pointer-events: none; 
   
+  font-size: 12
+}
+
+.tooltip .text {
+  font-size: 15;
 }
 
 th {
