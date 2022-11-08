@@ -5,6 +5,7 @@ auth.json
 *.ai
 src/graphic/data
 *.csv
+dist
 
 # Logs
 logs
