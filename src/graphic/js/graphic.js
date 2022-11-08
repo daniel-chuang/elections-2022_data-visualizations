@@ -5,6 +5,12 @@ import annArbor from "../data/ann_arbor.json";
 import votes from "../data/data.json";
 
 const emptyFill = "rgba(0,0,0,0.05)";
+const blue = "#162b5f";
+const red = "#c8473a";
+const green = "#238800";
+const orange = "#FFA600";
+const purple = "#665191";
+
 const percent = d3.format(".2%");
 
 function getPrecinctData(report, precinct) {
@@ -24,6 +30,10 @@ function getPluralityWinner(precinctData, options) {
     }
   });
 
+  if (max === 0) {
+    return "Empty";
+  }
+
   return maxName;
 }
 
@@ -39,32 +49,56 @@ function getOptions({ options }) {
     .map((d) => d.label);
 }
 
-function assignColors(options) {
-  return d3
-    .scaleOrdinal()
-    .domain([...options, "Tie"])
-    .range([
-      ...d3.schemeCategory10.slice(0, options.length).map((d) => d.slice(1)),
-      "979797",
-    ])
-    .unknown(emptyFill);
-}
-
 function totalVotesByOption({ report: { data: report } }, options) {
   return Object.fromEntries(
     options.map((o) => [o, d3.sum(report, (precinct) => precinct[o])])
   );
 }
 
-const draw = async () => {
-  const race = "Ann Arbor Mayor DEM";
+const draw = async (raceName) => {
+  const raceNameToSlug = {
+    Gubernatorial: "Governor and Lieutenant Governor",
+    "Ann Arbor Mayor": "Ann Arbor Mayor",
+    "State Proposal 1": "State Proposal 22-1",
+    "State Proposal 2": "State Proposal 22-2",
+    "State Proposal 22-3": "State Proposal 22-3",
+  };
+
+  const race = raceNameToSlug[raceName];
+
+  const title = document.querySelector("h1");
+  title.textContent = `Live Election Results - ${raceName}`;
+
+  const optionsToColors = {
+    // governor
+    "Gretchen Whitmer": blue,
+    "Tudor M. Dixon": red,
+
+    // ann arbor mayor
+    "Christopher Taylor": blue,
+    "Eric B. Lipson": "yellow",
+
+    // proposals
+    Yes: orange,
+    No: purple,
+  };
 
   const raceData = votes.data.filter((d) => d.name === race).pop();
   const { report } = raceData;
   const options = getOptions(raceData);
-  const colors = assignColors(options);
+  const colors = d3
+    .scaleOrdinal()
+    .domain([...options, "Tie"])
+    .range([
+      ...options
+        .map((option) => optionsToColors[option] ?? "#0000000d")
+        .map((d) => d.slice(1)),
+      "979797",
+    ])
+    .unknown(emptyFill);
 
   const figure = d3.select("figure");
+  figure.selectAll("*").remove();
   const width = figure.node().clientWidth;
   const isMobile = width < 500;
   const height = isMobile ? width : 500;
@@ -109,6 +143,9 @@ const draw = async () => {
         return emptyFill;
       }
       const winner = getPluralityWinner(precinctData, options);
+      if (winner === "Empty") {
+        return emptyFill;
+      }
       const color = colors(winner);
       return precinctData.counted === "fully-counted"
         ? `#${color}`
@@ -247,5 +284,15 @@ window.onload = () => {
   const pymChild = new pym.Child({ polling: 500 });
   pymChild.sendHeight();
   pymChild.onMessage("download", downloadImage);
-  draw();
+
+  document.querySelector("#last-update").innerHTML += votes.meta.time;
+  const chooser = document.querySelector("select");
+  const slug = chooser.value;
+  const race = chooser.selectedOptions[0].textContent;
+
+  draw(race);
+
+  chooser.addEventListener("change", () => {
+    draw(chooser.selectedOptions[0].textContent);
+  });
 };

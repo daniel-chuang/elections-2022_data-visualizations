@@ -1,11 +1,9 @@
 {
   "entries": {
     "index.html": {
-      "hed": "[Insert Race Title Here]",
-      "dek": "Washtenaw County Midterm Results",
-      "byline": "Daniel Chuang, Anushka Raheja and Maya Mikelson",
-      "source": "Washtenaw County",
-      "illustrator_output_filename": "output.html"
+      "hed": "Live Election Results",
+      "byline": "Daniel Chuang, Anushka Raheja, Maya Mikelson and Eric Lau",
+      "source": "Washtenaw County"
     }
   },
   "fetch": [
