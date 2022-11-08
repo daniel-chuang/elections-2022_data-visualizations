@@ -770,6 +770,13 @@ const draw = async ()=>{
     console.log(linearGradient);
     // const barBlocks = barContainer
     barContainer.append("div").style("width", `${width}px`).style("height", `${20}px`).style("background", linearGradient);
+    //// MAKING LABEL FOR THE BAR ////
+    // console.log(colors.domain());
+    console.log(totalVoteCountArray);
+    const barLabels = figure.append("div").style("height", `${20}px`).style("position", "relative").selectAll("span").data(colors.domain()).join("span").attr("class", "barLabels").style("width", `200px`).style("height", `${20}px`).style("display", "inline-block").style("position", "absolute")// .style("left", (d) => {
+    //   return "0px";
+    // })
+    .text((d)=>`${totalVoteCountArray[d]} (${100 * totalVoteCountArray[d] / (0, _d3.sum)(Object.values(totalVoteCountArray)).toPrecision(2)}%)`);
     //// MOUSE EVENTS FOR THE MAP ////
     paths.on("mouseover", function(event) {
         const [x, y] = _d3.pointer(event); // Returns an array of the x and y coords

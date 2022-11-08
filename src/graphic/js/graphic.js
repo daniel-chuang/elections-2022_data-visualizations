@@ -380,6 +380,32 @@ const draw = async () => {
     .style("height", `${20}px`)
     .style("background", linearGradient);
 
+  //// MAKING LABEL FOR THE BAR ////
+  // console.log(colors.domain());
+  console.log(totalVoteCountArray);
+  const barLabels = figure
+    .append("div")
+    .style("height", `${20}px`)
+    .style("position", "relative")
+    .selectAll("span")
+    .data(colors.domain())
+    .join("span")
+    .attr("class", "barLabels")
+    .style("width", `200px`)
+    .style("height", `${20}px`)
+    .style("display", "inline-block")
+    .style("position", "absolute")
+    // .style("left", (d) => {
+    //   return "0px";
+    // })
+    .text(
+      (d) =>
+        `${totalVoteCountArray[d]} (${
+          (100 * totalVoteCountArray[d]) /
+          sum(Object.values(totalVoteCountArray)).toPrecision(2)
+        }%)`
+    );
+
   //// MOUSE EVENTS FOR THE MAP ////
   paths
     .on("mouseover", function (event) {
