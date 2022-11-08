@@ -561,7 +561,7 @@ window.onload = async ()=>{
     const graphic = $("#graphic");
     // Set the width on load if exists
     const params = getQueryParams();
-    const { entries  } = await require("52369822392ecec8");
+    const { entries  } = await require("f6213b555e533be0");
     let entry = params.get("entry") ?? Object.keys(entries)[0];
     if (!Object.hasOwn(entries, entry)) {
         params.delete("entry");
@@ -627,7 +627,7 @@ window.onload = async ()=>{
     });
 };
 
-},{"pym.js":"21u1Q","52369822392ecec8":"lAj79","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"21u1Q":[function(require,module,exports) {
+},{"pym.js":"21u1Q","f6213b555e533be0":"lAj79","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"21u1Q":[function(require,module,exports) {
 /*! pym.js - v1.3.2 - 2018-02-13 */ /*
 * Pym.js is library that resizes an iframe based on the width of the parent and the resulting height of the child.
 * Check out the docs at http://blog.apps.npr.org/pym.js/ or the readme at README.md for usage.

@@ -10,7 +10,7 @@ import pym from "pym.js";
 import * as d3 from "d3";
 import downloadImage from "./download-image";
 import ann_arbor from "../data/ann_arbor.json"; // importing the json file
-import data from "../data/sample_data.json"; // importing the json file
+import data from "../data/sm-asdfkasdf.json"; // importing the json file
 import { sum } from "d3";
 
 // Initialization
@@ -21,8 +21,8 @@ let is_mobile = false;
 
 // Race to Cover
 // const race = "AAATA Proposal";
-const race = "Ann Arbor Mayor DEM";
-// const race = "Ann Arbor Council W4 DEM";
+// const race = "Ann Arbor Mayor DEM";
+const race = "Ann Arbor Council W4 DEM";
 
 ////////////////// FUNCTIONS //////////////////
 // Getting the specific race's data
@@ -348,14 +348,13 @@ const draw = async () => {
   const barContainer = figure.append("div").attr("class", "barContainer");
 
   // Remove the tie option from colors
-  colors.domain().splice(-1);
-  colors.range().splice(-1);
-  colors
-    .domain(colors.domain().slice(0, colors.domain().length - 1))
-    .range(colors.range().slice(0, colors.range().length - 1));
-  console.log(colors);
-  console.log(colors.range());
-  console.log(colors.domain());
+  if (tie_exists) {
+    colors.domain().splice(-1);
+    colors.range().splice(-1);
+    colors
+      .domain(colors.domain().slice(0, colors.domain().length - 1))
+      .range(colors.range().slice(0, colors.range().length - 1));
+  }
 
   const totalVoteCountArray = totalVotesEverywhere(specificData, colors);
   let linearGradient = "linear-gradient( to right,";
@@ -400,7 +399,6 @@ const draw = async () => {
         d3.select(this).datum().properties.NAME
       );
       const totalVoteCount = totalVotes(precinctData);
-      console.log(totalVoteCount);
       for (let i = 0; i < colors.domain().length; i++) {
         dynamicTable += "<tr>";
 
@@ -408,6 +406,7 @@ const draw = async () => {
         dynamicTable += `<th>${colors.domain()[i]}</th>`;
 
         // Votes
+        console.log(precinctData);
         if (precinctData[colors.domain()[i]] === undefined) {
           dynamicTable += "<th>" + "N/A" + "</th>";
         } else {
