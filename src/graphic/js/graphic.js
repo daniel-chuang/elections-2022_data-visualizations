@@ -157,7 +157,7 @@ const draw = async (raceName) => {
     "Leslie Shannon": red,
 
     "Jenn Cornell": blue,
-    "Jonathan Hoard": "yellow",
+    "Jonathan Hoard": "#FFFF00",
   };
 
   const raceData = votes.data.filter((d) => d.name === race).pop();
