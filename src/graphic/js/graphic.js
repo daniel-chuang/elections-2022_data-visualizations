@@ -2,14 +2,16 @@ import pym from "pym.js";
 import * as d3 from "d3";
 import downloadImage from "./download-image";
 import annArbor from "../data/ann_arbor.json";
-import votes from "../data/data.json";
+import blurbs from "../data/blurbs.csv";
 
-const emptyFill = "rgba(0,0,0,0.05)";
-const blue = "#162b5f";
+const emptyFill = "#0000000d";
+const blue = "#55aaff";
 const red = "#c8473a";
 const green = "#238800";
-const orange = "#FFA600";
+const orange = "#ffa600";
 const purple = "#665191";
+
+let votes;
 
 const percent = d3.format(".2%");
 
@@ -43,6 +45,19 @@ function getOptions({ options }) {
     "Rejected write-ins",
     "Unassigned write-ins",
     "counted",
+    "Mary Buzuma Brian Ellison",
+    "Donna Brandenburg Mellissa Carone",
+    "Kevin Hogan Destiny Clayton",
+    "Daryl M. Simpson Doug Dern",
+    "Gregory Scott Stempfle",
+    "Christine C. Schwartz",
+    "Larry James Hutchinson Jr.",
+    "Joseph W. McHugh Jr.",
+    "Gerald T. Van Sickle",
+    "Eric Larson",
+    "Joe Sanger",
+    "Sherry A. Wells",
+    "Kathleen Oakford",
   ];
   return options
     .filter((d) => !avoidAttributes.includes(d.label))
@@ -57,12 +72,32 @@ function totalVotesByOption({ report: { data: report } }, options) {
 
 const draw = async (raceName) => {
   const raceNameToSlug = {
+    "State Senator 14th District": "State Senate District 14",
+    "State Senator 15th District": "State Senate District 15",
     Gubernatorial: "Governor and Lieutenant Governor",
     "Ann Arbor Mayor": "Ann Arbor Mayor",
+    "Secretary of State": "Secretary of State",
+    "US Congress District 6": "US Congress District 6",
     "State Proposal 1": "State Proposal 22-1",
     "State Proposal 2": "State Proposal 22-2",
-    "State Proposal 22-3": "State Proposal 22-3",
+    "State Proposal 3": "State Proposal 22-3",
+    "City of Ann Arbor Proposal 1": "City of Ann Arbor Proposal 1",
+    "Attorney General": "Attorney General",
+    "Regent of the University of Michigan":
+      "Regent of the University of Michigan",
+    "Justice of Supreme Court": "Justice of Supreme Court",
+    "State Legislature Representative 23rd District": "State Rep District 23",
+    "State Legislature Representative 33rd District": "State Rep District 33",
+    "State Legislature Representative 47th District": "State Rep District 47",
+    "State Legislature Representative 48th District": "State Rep District 48",
+    "County Commissioner 8th District": "County Commissioner District 8",
+    "Ann Arbor Council Member 5th Ward": "Ann Arbor Council Member 5th Ward",
   };
+
+  const blurb = blurbs.filter((d) => d.race === raceName).pop();
+  document.querySelector("#blurb").innerHTML = blurb.blurb
+    .split("\n")
+    .join("<br/><br/>");
 
   const race = raceNameToSlug[raceName];
 
@@ -71,16 +106,58 @@ const draw = async (raceName) => {
 
   const optionsToColors = {
     // governor
-    "Gretchen Whitmer": blue,
-    "Tudor M. Dixon": red,
-
+    "Gretchen Whitmer Garlin D. Gilchrist II": blue,
+    "Tudor M. Dixon Shane Hernandez": red,
+    "Jocelyn Benson": blue,
+    "Kristina Elaine Karamo": red,
     // ann arbor mayor
     "Christopher Taylor": blue,
-    "Eric B. Lipson": "yellow",
-
+    "Eric B. Lipson": "#FFFF00",
+    //regents
+    "Mike Behm": blue,
+    "Kathy White": "#0044ff",
+    "Lena Epstein": red,
+    "Sevag Vartanian": "#fa8072",
+    //attorney general
+    "Dana Nessel": blue,
+    "Matthew DePerno": red,
+    // congress
+    "Debbie Dingell": blue,
+    "Whittney Williams": red,
+    //supreme court
+    "Richard Bernstein": "#004225",
+    "Kyra Harris Bolden": "#299617",
+    "Paul Hudson": "#7cfc00",
+    "Kerry Lee Morgan": "#a7f432",
+    "Brian Zahra": "#d0f0c0",
     // proposals
     Yes: orange,
     No: purple,
+    // 14
+    "Sue Shink": blue,
+    "Tim Golding": red,
+    // 15
+    "Jeff Irwin": blue,
+    "Scott Price": red,
+
+    "Jason Morgan": blue,
+    "Richard L. Sharland": red,
+
+    "Felicia Brabec": blue,
+    "Robert Borer III": red,
+
+    "Carrie Rheingans": blue,
+    "Tina Bednarski-Lynch": red,
+
+    "Jennifer Conlin": blue,
+    "Jason Woolford": red,
+    "Eric Borregard": green,
+
+    "Yousef Rabhi": blue,
+    "Leslie Shannon": red,
+
+    "Jenn Cornell": blue,
+    "Jonathan Hoard": "yellow",
   };
 
   const raceData = votes.data.filter((d) => d.name === race).pop();
@@ -91,7 +168,7 @@ const draw = async (raceName) => {
     .domain([...options, "Tie"])
     .range([
       ...options
-        .map((option) => optionsToColors[option] ?? "#0000000d")
+        .map((option) => optionsToColors[option] ?? emptyFill)
         .map((d) => d.slice(1)),
       "979797",
     ])
@@ -208,6 +285,13 @@ const draw = async (raceName) => {
     )
     .each(drawColorBlocks);
 
+  const barContainer = figure
+    .append("div")
+    .style("position", "relative")
+    .style("margin-top", "10px")
+    .style("width", "100%")
+    .style("height", "20px");
+
   const votesByOption = totalVotesByOption(raceData, options);
   const totalVotes = d3.sum(Object.values(votesByOption));
   let linearGradient = "linear-gradient(to right,";
@@ -224,9 +308,8 @@ const draw = async (raceName) => {
   });
   linearGradient += ")";
 
-  figure
+  barContainer
     .append("div")
-    .style("margin-top", "10px")
     .style("width", "100%")
     .style("height", "20px")
     .style("background", linearGradient);
@@ -280,19 +363,23 @@ const draw = async (raceName) => {
     });
 };
 
-window.onload = () => {
+window.onload = async () => {
   const pymChild = new pym.Child({ polling: 500 });
   pymChild.sendHeight();
   pymChild.onMessage("download", downloadImage);
 
+  votes = await d3.json(
+    "https://magnify.michigandaily.us/general-2022-washtenaw-results/results.json"
+  );
+
   document.querySelector("#last-update").innerHTML += votes.meta.time;
   const chooser = document.querySelector("select");
-  const slug = chooser.value;
-  const race = chooser.selectedOptions[0].textContent;
+  let race = chooser.selectedOptions[0].textContent;
 
   draw(race);
 
   chooser.addEventListener("change", () => {
-    draw(chooser.selectedOptions[0].textContent);
+    race = chooser.selectedOptions[0].textContent;
+    draw(race);
   });
 };

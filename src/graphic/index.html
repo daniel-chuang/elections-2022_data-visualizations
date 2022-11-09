@@ -9,10 +9,15 @@
 
     {% block styles %}
     <link rel="stylesheet" href="./css/main.scss" type="text/css" media="all" />
-    <link rel="stylesheet" href="./css/graphic.scss" type="text/css" media="all" />
+    <link
+      rel="stylesheet"
+      href="./css/graphic.scss"
+      type="text/css"
+      media="all"
+    />
     <style>
       select {
-        font-family: 'Open Sans';
+        font-family: "Open Sans";
         font-weight: bold;
       }
 
@@ -20,9 +25,25 @@
         width: 50%;
       }
 
-      @media screen and (max-width: 600px) {
+      #grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 10px;
+      }
+
+      #blurb {
+        font-size: 1rem;
+      }
+
+      @media screen and (max-width: 800px) {
         #race-select {
           width: 100%;
+        }
+
+        #grid {
+          grid-template-columns: unset;
+          display: block;
+          margin-bottom: 10px;
         }
       }
     </style>
@@ -30,25 +51,65 @@
   </head>
 
   <body>
-    <div style="display: flex; justify-content: center; align-items: center; flex-direction: column; font-family: 'Open Sans'; gap: 5px">
+    <div
+      style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        font-family: 'Open Sans';
+        gap: 5px;
+      "
+    >
       <label for="race-select"><b>Choose a race/proposal</b></label>
 
       <select name="races" id="race-select">
-        <option value="gubernatorial">Gubernatorial</option>
-        <option value="ann-arbor-mayor" selected>Ann Arbor Mayor</option>
-        <option value="state-proposal-1">State Proposal 1</option>
-        <option value="state-proposal-2">State Proposal 2</option>
-        <option value="state-proposal-3">State Proposal 3</option>
-        <option value="city-proposal-1">Ann Arbor City Proposal 3</option>
+        <optgroup label="Federal">
+          <option value="us-congress-district-6">US Congress District 6</option>
+        </optgroup>
+        <optgroup label="State Proposals">
+          <option value="state-proposal-1">State Proposal 1</option>
+          <option value="state-proposal-2">State Proposal 2</option>
+          <option value="state-proposal-3">State Proposal 3</option>
+        </optgroup>
+        <optgroup label="State">
+          <option value="gubernatorial" selected>Gubernatorial</option>
+          <option value="secretary-of-state">Secretary of State</option>
+          <option value="attorney-general">Attorney General</option>
+          <option value="justice-of-supreme-court">Justice of Supreme Court</option>
+          <option value="state-senator-14th-district">State Senator 14th District</option>
+          <option value="state-senator-15th-district">State Senator 15th District</option>
+          <option value="state-legislature-23rd-district">State Legislature Representative 23rd District</option>
+          <option value="state-legislature-33rd-district">State Legislature Representative 33rd District</option>
+          <option value="state-legislature-47th-district">State Legislature Representative 47th District</option>
+          <option value="state-legislature-48th-district">State Legislature Representative 48th District</option>
+          <option value="county-commissioner-8th-district">County Commissioner 8th District</option>
+        </optgroup>
+        <optgroup label="Local">
+          <option value="ann-arbor-mayor">Ann Arbor Mayor</option>
+          <option value="ann-arbor-council-5th-ward">Ann Arbor Council Member 5th Ward</option>
+          <option value="regent-of-u-m">Regent of the University of Michigan</option>
+          <option value="city-proposal-1">City of Ann Arbor Proposal 1</option>
+        </optgroup>
       </select>
     </div>
     <h1 class="figure__title">{{ config.entries[filename].hed }}</h1>
     <h2 class="figure__caption">{{ config.entries[filename].dek }}</h2>
-    <figure>
-      {% include "src/graphic/ai2html-output/" +
-      config.entries[filename].illustrator_output_filename ignore missing %}
-    </figure>
-    <div id="last-update" style="font-size: 11px; font-family: 'Open Sans'; margin-bottom: 10px;">Last updated: </div>
+    <div id="grid">
+      <div>
+        <figure>
+          {% include "src/graphic/ai2html-output/" +
+          config.entries[filename].illustrator_output_filename ignore missing %}
+        </figure>
+        <div
+          id="last-update"
+          style="font-size: 11px; font-family: 'Open Sans'; margin-bottom: 10px"
+        >
+          Last updated:
+        </div>
+      </div>
+      <div id="blurb"></div>
+    </div>
     {% if config.entries[filename].note %}
     <div class="figure__note">Note: {{ config.entries[filename].note }}</div>
     {% endif %}
@@ -59,7 +120,7 @@
       Graphic by {{ config.entries[filename].byline }} / The Michigan Daily
     </div>
 
-    {% block scripts %} 
+    {% block scripts %}
     <script type="module" src="./js/graphic.js" charset="utf-8"></script>
     {% endblock %}
   </body>
