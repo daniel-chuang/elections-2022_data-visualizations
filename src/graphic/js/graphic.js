@@ -96,6 +96,8 @@ const draw = async (raceName) => {
       "Ann Arbor Public Schools Board Member",
     "Ann Arbor District Library Board Member":
       "Ann Arbor District Library Board Member",
+    "Judge of Circuit Court 22nd Circuit Court":
+      "Judge Circuit Court Non-incumbent",
   };
 
   const blurb = blurbs.filter((d) => d.race === raceName).pop();
@@ -129,11 +131,11 @@ const draw = async (raceName) => {
     "Debbie Dingell": blue,
     "Whittney Williams": red,
     //supreme court
-    "Richard Bernstein": "#004225",
-    "Kyra Harris Bolden": "#299617",
-    "Paul Hudson": "#7cfc00",
-    "Kerry Lee Morgan": "#a7f432",
-    "Brian Zahra": "#d0f0c0",
+    "Richard Bernstein": "#8c564b",
+    "Kyra Harris Bolden": "#ff7f0e",
+    "Paul Hudson": "#2ca02c",
+    "Kerry Lee Morgan": "#9467bd",
+    "Brian Zahra": "#e377c2",
     // proposals
     Yes: orange,
     No: purple,
@@ -176,6 +178,16 @@ const draw = async (raceName) => {
     "Andrew Spencer": "#e6ab02",
     "Leslie Wilkins": "#7570b3",
     "Alex Wood": "#e7298a",
+
+    "Sara Duvall": "#1f77b4",
+    "Catherine Hadley": "#ff7f0e",
+    "Sherrie A. Kossoudji": "#2ca02c",
+    "Jim Leija": "#d62728",
+    "John Schaeffer": "#9467bd",
+    "Aidan Sova": "#8c564b",
+
+    "Marla Linderman Richelew": "#9467bd",
+    "Arianne Elizabeth Slay": "#2ca02c",
   };
 
   const raceData = votes.data.filter((d) => d.name === race).pop();
