@@ -415,6 +415,18 @@ window.onload = async () => {
   const chooser = document.querySelector("select");
   let race = chooser.selectedOptions[0].textContent;
 
+  const url = new URL(window.location.href);
+  if (url.searchParams.has("race")) {
+    const option = document.querySelector(
+      `option[value='${url.searchParams.get("race")}']`
+    );
+    race = option.textContent;
+    document.querySelector("label").style.display = "none";
+    document.querySelector("#race-select").style.display = "none";
+    document.querySelector("#blurb").style.display = "none";
+    document.querySelector("#grid").style.display = "block";
+  }
+
   draw(race);
 
   chooser.addEventListener("change", () => {
