@@ -16,11 +16,12 @@
     "postinstall": "sink fetch",
     "clean": "rm -rf dist/* && rm -rf .parcel-cache",
     "dev": "yarn clean && parcel src/index.html src/graphic/*.html",
-    "build": "yarn clean && parcel build --no-scope-hoist src/index.html src/graphic/*.html"
+    "build": "yarn clean && parcel build --no-scope-hoist src/index.html src/graphic/*.html",
+    "deploy": "yarn build && yarn sink deploy aws"
   },
   "targets": {
     "default": {
-      "publicUrl": "/2022-midterm-results"
+      "publicUrl": "/2022/midterm-results"
     }
   },
   "dependencies": {

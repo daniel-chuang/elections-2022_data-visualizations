@@ -1,11 +1,9 @@
 {
   "entries": {
     "index.html": {
-      "hed": "[Insert Race Title Here]",
-      "dek": "Washtenaw County Midterm Results",
-      "byline": "Daniel Chuang, Anushka Raheja and Maya Mikelson",
-      "source": "Washtenaw County",
-      "illustrator_output_filename": "output.html"
+      "hed": "Live Election Results",
+      "byline": "Daniel Chuang, Anushka Raheja, Maya Mikelson and Eric Lau",
+      "source": "Washtenaw County"
     }
   },
   "fetch": [
@@ -14,14 +12,21 @@
       "id": "17YYcD0XqraE3sRCp8V4MIedYZwqdwJ0i",
       "output": "./src/graphic/data/ann_arbor.json",
       "auth": "~/.daily-google-services.json"
+    },
+    {
+      "type": "sheet",
+      "id": "1U5cOT-kPpNKW0Ha8VW7fDOupdiyXWL8ghUw8QOM0sLk",
+      "sheetId": "0",
+      "output": "./src/graphic/data/blurbs.csv",
+      "auth": "~/.daily-google-services.json"
     }
   ],
   "deployment": {
-    "url": "https://test.michigandaily.com/2022-midterm-results/",
+    "url": "https://specials.michigandaily.com/2022/midterm-results/",
     "region": "us-east-2",
-    "distribution": "E3DZSV694XOOMU",
-    "bucket": "test.michigandaily.com",
-    "key": "2022-midterm-results",
+    "distribution": "E2N1K85UYVM55K",
+    "bucket": "specials.michigandaily.com",
+    "key": "2022/midterm-results",
     "build": "./dist",
     "profile": "sink"
   }

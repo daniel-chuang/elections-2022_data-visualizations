@@ -18,11 +18,11 @@ figure {
   border-radius: 5px;
   position: absolute; // position it with top and left
   display: none; // hide it until revealed
+
+  pointer-events: none;
   
-  // if you put a mouse over a tooltip, ignore... cascade down to whatever is below
-  pointer-events: none; 
-  
-  font-size: 12
+  font-size: 12px;
+  z-index: 2;
 }
 
 .tooltip .text {
