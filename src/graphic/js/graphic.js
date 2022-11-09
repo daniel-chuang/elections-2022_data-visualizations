@@ -92,6 +92,10 @@ const draw = async (raceName) => {
     "State Legislature Representative 48th District": "State Rep District 48",
     "County Commissioner 8th District": "County Commissioner District 8",
     "Ann Arbor Council Member 5th Ward": "Ann Arbor Council Member 5th Ward",
+    "Ann Arbor Public Schools Board Member":
+      "Ann Arbor Public Schools Board Member",
+    "Ann Arbor District Library Board Member":
+      "Ann Arbor District Library Board Member",
   };
 
   const blurb = blurbs.filter((d) => d.race === raceName).pop();
@@ -158,6 +162,20 @@ const draw = async (raceName) => {
 
     "Jenn Cornell": blue,
     "Jonathan Hoard": "#FFFF00",
+
+    "Susan Baskett": "#1f77b4",
+    "Kai S. Cortina": "#ff7f0e",
+    "Jacinda Townsend Gides": "#2ca02c",
+    "Jamila James": "#d62728",
+    "Lena Kauffman": "#9467bd",
+    "Jeremy Lapham": "#8c564b",
+    "Paulette Metoyer": "#e377c2",
+    "Rima Mohammad": "#7f7f7f",
+    "Susan Ward Schmidt": "#bcbd22",
+    "Barry Schumer": "#17becf",
+    "Andrew Spencer": "#e6ab02",
+    "Leslie Wilkins": "#7570b3",
+    "Alex Wood": "#e7298a",
   };
 
   const raceData = votes.data.filter((d) => d.name === race).pop();
@@ -178,7 +196,7 @@ const draw = async (raceName) => {
   figure.selectAll("*").remove();
   const width = figure.node().clientWidth;
   const isMobile = width < 500;
-  const height = isMobile ? width : 500;
+  let height = isMobile ? width : 500;
 
   const svg = figure.append("svg").attr("width", width).attr("height", height);
   const tooltip = figure.append("div").attr("class", "tooltip");
@@ -240,6 +258,11 @@ const draw = async (raceName) => {
   const blockOffset = 13;
   const fontSize = 11;
 
+  if (!isMobile && legendHeight > height) {
+    height = legendHeight;
+    svg.attr("height", legendHeight);
+  }
+
   const legend = isMobile
     ? figure.append("svg").attr("width", width).attr("height", legendHeight)
     : svg.append("g");
@@ -268,7 +291,7 @@ const draw = async (raceName) => {
 
     square(s).attr("fill", `url(#cross-${color})`).attr("y", blockSize);
     label(s)
-      .text(`${name} (Partial Count)`)
+      .text(`${name} (Partial)`)
       .attr("y", blockOffset + blockSize);
   }
 
@@ -296,16 +319,18 @@ const draw = async (raceName) => {
   const totalVotes = d3.sum(Object.values(votesByOption));
   let linearGradient = "linear-gradient(to right,";
   let currentPercent = 0;
-  options.forEach((option, i) => {
-    const percent = (votesByOption[option] / totalVotes) * 100;
-    linearGradient += `#${colors(option)} ${currentPercent}% ${
-      currentPercent + percent
-    }%`;
-    if (i !== options.length - 1) {
-      linearGradient += ",";
-    }
-    currentPercent += percent;
-  });
+  options
+    .sort((a, b) => d3.descending(votesByOption[a], votesByOption[b]))
+    .forEach((option, i) => {
+      const percent = (votesByOption[option] / totalVotes) * 100;
+      linearGradient += `#${colors(option)} ${currentPercent}% ${
+        currentPercent + percent
+      }%`;
+      if (i !== options.length - 1) {
+        linearGradient += ",";
+      }
+      currentPercent += percent;
+    });
   linearGradient += ")";
 
   barContainer
@@ -340,14 +365,16 @@ const draw = async (raceName) => {
 
       const precinctData = getPrecinctData(report, NAME);
       const totalPrecinctVotes = d3.sum(options, (d) => precinctData[d]);
-      options.forEach((option) => {
-        const votePercent = precinctData[option] / totalPrecinctVotes;
-        table += `<tr>
+      options
+        .sort((a, b) => d3.descending(precinctData[a], precinctData[b]))
+        .forEach((option) => {
+          const votePercent = precinctData[option] / totalPrecinctVotes;
+          table += `<tr>
           <th>${option}</th>
           <th>${precinctData[option]}</th>
           <th>${percent(votePercent)}</th>
         </tr>`;
-      });
+        });
       table += "</table>";
 
       tooltip.style("display", "unset").html(
